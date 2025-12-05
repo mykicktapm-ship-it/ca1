@@ -1,70 +1,57 @@
 'use client';
 
-import Link from 'next/link';
-import { useEffect, type ReactNode } from 'react';
-import { useTelegramInitData } from '@/hooks/useTelegramInitData';
+import { useEffect } from 'react';
+import Sidebar from './Sidebar';
+import TopBar from './TopBar';
+import BottomNav from './BottomNav';
+import ModalRoot from './ModalRoot';
+import { UIProvider, useUI } from './UIContext';
+import WalletAllocationModal from '@/components/modals/WalletAllocationModal';
+import NewOrderWizard from '@/components/modals/NewOrderWizard';
+import { sources } from '@/lib/mockData';
+import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 
-export default function AppShell({ children }: { children: ReactNode }) {
-  const { initData } = useTelegramInitData();
+function ShellContent({ children }: { children: React.ReactNode }) {
+  const { activeModal, closeModal } = useUI();
+  const webApp = useTelegramWebApp();
 
   useEffect(() => {
-    const body = typeof document !== 'undefined' ? document.body : null;
-
-    if (body && initData) {
-      body.dataset.telegramInit = initData;
-    }
-
-    return () => {
-      if (body && body.dataset.telegramInit === initData) {
-        delete body.dataset.telegramInit;
-      }
-    };
-  }, [initData]);
+    webApp?.expand();
+  }, [webApp]);
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-      <div className="mx-auto flex min-h-screen max-w-[520px] flex-col px-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <header
-          className="sticky top-0 z-20 -mx-4 mb-4 border-b border-[var(--border)]/70 bg-[#0f1118]/80 px-4 pb-3 pt-4 backdrop-blur"
-          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--primary-soft)] text-sm font-bold text-[var(--primary)] shadow-[0_10px_30px_rgba(90,99,255,0.18)]">
-                SF
-              </span>
-              <div className="leading-tight">
-                <Link href="/" className="block text-lg font-semibold tracking-tight">
-                  SOURCEFLOW
-                </Link>
-                <p className="text-xs uppercase tracking-[0.12em] text-[var(--text-muted)]">Traffic Arbitration Desk</p>
-              </div>
-            </div>
-            <nav className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
-              <Link
-                href="/"
-                className="rounded-full border border-transparent px-3 py-1.5 transition hover:border-[var(--border)] hover:text-white"
-              >
-                Заявка
-              </Link>
-              <Link
-                href="/pay"
-                className="rounded-full border border-transparent px-3 py-1.5 transition hover:border-[var(--border)] hover:text-white"
-              >
-                Оплата
-              </Link>
-              <Link
-                href="/stats"
-                className="rounded-full border border-transparent px-3 py-1.5 transition hover:border-[var(--border)] hover:text-white"
-              >
-                Статус
-              </Link>
-            </nav>
-          </div>
-        </header>
-
-        <main className="flex flex-1 flex-col gap-6 pb-10">{children}</main>
+    <div className="min-h-screen bg-[var(--bg)] text-slate-900">
+      <div className="flex min-h-screen">
+        <Sidebar />
+        <div className="flex min-h-screen flex-1 flex-col md:bg-slate-50/80">
+          <TopBar />
+          <main className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pb-24 pt-4 sm:px-6 md:pb-6">
+            {children}
+          </main>
+        </div>
       </div>
+      <BottomNav />
+      <ModalRoot activeModal={activeModal}>
+        {activeModal === 'walletAllocation' && (
+          <WalletAllocationModal sources={sources} onClose={closeModal} />
+        )}
+        {activeModal === 'newOrder' && <NewOrderWizard onClose={closeModal} />}
+      </ModalRoot>
     </div>
+  );
+}
+
+export default function AppShell({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    // Scroll to top on route change for mini-app experience
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0 });
+    }
+  }, []);
+
+  return (
+    <UIProvider>
+      <ShellContent>{children}</ShellContent>
+    </UIProvider>
   );
 }
