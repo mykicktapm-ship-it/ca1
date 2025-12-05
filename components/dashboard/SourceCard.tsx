@@ -1,39 +1,31 @@
-'use client';
+import type { Source } from '@/lib/mockData';
 
 interface SourceCardProps {
-  name: string;
-  platform: string;
-  region: string;
-  spend: number;
-  ctr: number;
-  conversions: number;
-  status: string;
+  source: Source;
 }
 
-export function SourceCard({ name, platform, region, spend, ctr, conversions, status }: SourceCardProps) {
+export default function SourceCard({ source }: SourceCardProps) {
+  const pct = Math.min(100, Math.round((source.spent / source.allocated) * 100));
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 shadow-lg shadow-black/30 transition hover:-translate-y-1 hover:border-primary/50">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm uppercase tracking-wide text-primary">{platform}</p>
-          <h3 className="text-lg font-semibold text-white">{name}</h3>
-          <p className="text-xs text-gray-400">{region}</p>
+    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold text-white ${source.color}`}>
+            {source.logo}
+          </div>
+          <div className="leading-tight">
+            <p className="font-semibold text-slate-900">{source.name}</p>
+            <p className="text-xs text-emerald-600">Active</p>
+          </div>
         </div>
-        <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium capitalize text-primary">{status}</span>
+        <span className="text-xs font-mono text-slate-500">{pct}%</span>
       </div>
-      <div className="grid grid-cols-3 gap-3 text-sm text-gray-200">
-        <div>
-          <p className="text-xs text-gray-400">Spend</p>
-          <p className="font-semibold">${spend.toLocaleString()}</p>
-        </div>
-        <div>
-          <p className="text-xs text-gray-400">CTR</p>
-          <p className="font-semibold">{ctr.toFixed(1)}%</p>
-        </div>
-        <div>
-          <p className="text-xs text-gray-400">Conversions</p>
-          <p className="font-semibold">{conversions}</p>
-        </div>
+      <div className="flex items-center justify-between text-sm text-slate-500">
+        <span>Allocated ${source.allocated.toLocaleString()}</span>
+        <span>Spent ${source.spent.toLocaleString()}</span>
+      </div>
+      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+        <div className="h-full bg-indigo-600" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
