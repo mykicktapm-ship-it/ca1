@@ -3,10 +3,10 @@
 interface GeoSelectProps {
   options: string[];
   value: string[];
-  onToggle: (country: string) => void;
-  onAdd: (country: string) => void;
+  onToggle: (_country: string) => void;
+  onAdd: (_country: string) => void;
   inputValue: string;
-  onInputChange: (value: string) => void;
+  onInputChange: (_value: string) => void;
   error?: string;
 }
 

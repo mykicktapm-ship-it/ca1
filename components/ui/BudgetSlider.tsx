@@ -2,7 +2,7 @@
 
 interface BudgetSliderProps {
   value: number;
-  onChange: (value: number) => void;
+  onChange: (_value: number) => void;
   min?: number;
   max?: number;
 }

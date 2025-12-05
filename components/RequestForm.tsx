@@ -60,9 +60,6 @@ export function RequestForm() {
 
   const watchedGeo = watch('geo');
   const watchedBudget = watch('budget');
-  const watchedPlatform = watch('platform');
-  const watchedNiche = watch('niche');
-  const watchedAudience = watch('audience');
 
   const toggleGeo = (country: string) => {
     const current = getValues('geo');
@@ -99,7 +96,7 @@ export function RequestForm() {
       const record = await apiPost<Application>('/api/applications', payload, { initData });
       setServerSuccess('Заявка отправлена. Перенаправляем на оплату...');
       router.push(`/pay?application_id=${record.id}`);
-    } catch (error) {
+    } catch (_error) {
       setServerError('Что-то пошло не так. Попробуйте еще раз.');
     }
   };
