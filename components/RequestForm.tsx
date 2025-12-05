@@ -7,6 +7,8 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { useTelegramInitData } from '@/hooks/useTelegramInitData';
+import { apiPost } from '@/lib/api';
+import type { Application } from '@/lib/types';
 
 const geoPresets = ['US', 'CA', 'UK', 'DE', 'FR', 'BR', 'AU', 'IN', 'SG', 'AE'];
 const platformOptions = [
@@ -91,19 +93,7 @@ export function RequestForm() {
         initData
       };
 
-      const response = await fetch('/api/applications', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        const message = await response.text();
-        setServerError(message || 'Failed to create application');
-        return;
-      }
-
-      const record = await response.json();
+      const record = await apiPost<Application>('/api/applications', payload, { initData });
       setServerSuccess('Application created! Redirecting to payment...');
       router.push(`/pay?application_id=${record.id}`);
     } catch (error) {

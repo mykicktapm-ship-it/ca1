@@ -7,6 +7,7 @@ import { ApplicationStatusCard } from '@/components/dashboard/ApplicationStatusC
 import { MySourcesGrid, type SourceOverview } from '@/components/dashboard/MySourcesGrid';
 import { PortfolioDonut } from '@/components/dashboard/PortfolioDonut';
 import { useTelegramInitData } from '@/hooks/useTelegramInitData';
+import { apiGet } from '@/lib/api';
 import type { Application, Metric } from '@/lib/types';
 
 const Bar = dynamic(() => import('react-chartjs-2').then((mod) => mod.Bar), { ssr: false });
@@ -39,22 +40,14 @@ export default function StatsPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch('/api/stats', {
-          headers: {
-            'x-telegram-init': initData
-          }
-        });
-        if (!res.ok) {
-          throw new Error('Failed to load stats');
-        }
-        const payload = (await res.json()) as StatsResponse;
+        const payload = await apiGet<StatsResponse>('/api/stats', { initData });
         setStats(payload);
       } catch (err) {
         setError((err as Error).message);
       }
     };
 
-    if (!stats) {
+    if (!stats && initData) {
       load();
     }
   }, [initData, stats]);

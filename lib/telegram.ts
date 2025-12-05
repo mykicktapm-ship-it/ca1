@@ -1,3 +1,5 @@
+export type TelegramWebApp = typeof import('@twa-dev/sdk').default;
+
 interface TelegramWebAppData {
   user?: {
     id: number;
@@ -5,6 +7,26 @@ interface TelegramWebAppData {
   };
   [key: string]: unknown;
 }
+
+let webAppPromise: Promise<TelegramWebApp | null> | null = null;
+
+export const initializeTelegramWebApp = async (): Promise<TelegramWebApp | null> => {
+  if (typeof window === 'undefined') return null;
+  if (webAppPromise) return webAppPromise;
+
+  webAppPromise = import('@twa-dev/sdk')
+    .then(({ default: WebApp }) => {
+      WebApp.ready();
+      WebApp.expand();
+      return WebApp;
+    })
+    .catch((err) => {
+      console.error('Telegram WebApp init failed', err);
+      return null;
+    });
+
+  return webAppPromise;
+};
 
 export const parseInitData = (initData: string): TelegramWebAppData | null => {
   if (!initData) return null;

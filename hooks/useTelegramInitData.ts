@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useTelegramWebApp } from './useTelegramWebApp';
+import type { TelegramWebApp } from '@/lib/telegram';
 
 interface TelegramInitData {
-  webApp: ReturnType<typeof useTelegramWebApp>;
+  webApp: TelegramWebApp | null;
   initData: string;
 }
 

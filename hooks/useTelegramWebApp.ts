@@ -1,26 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { initializeTelegramWebApp, type TelegramWebApp } from '@/lib/telegram';
 
 export function useTelegramWebApp() {
-  const [tg, setTg] = useState<any | null>(null);
+  const [tg, setTg] = useState<TelegramWebApp | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    let mounted = true;
 
-    (async () => {
-      try {
-        const { default: WebApp } = await import('@twa-dev/sdk');
+    initializeTelegramWebApp().then((webApp) => {
+      if (!mounted) return;
+      setTg(webApp);
+    });
 
-        const app = WebApp;
-        app.ready();
-        app.expand();
-
-        setTg(app);
-      } catch (err) {
-        console.error('Telegram WebApp init failed', err);
-      }
-    })();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return tg;
