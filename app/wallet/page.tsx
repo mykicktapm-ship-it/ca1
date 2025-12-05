@@ -1,16 +1,24 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import BalanceCard from '@/components/dashboard/BalanceCard';
 import SourceCard from '@/components/dashboard/SourceCard';
 import { sources } from '@/lib/mockData';
 import { useUI } from '@/components/layout/UIContext';
+import TonConnectButton from '@/components/ton/TonConnectButton';
+import { fetchSourceWalletMetrics } from '@/lib/metricsClient';
 
 export default function WalletPage() {
   const { openWalletAllocation } = useUI();
+  const [metrics, setMetrics] = useState({ balance: 0, allocated: 0, spent: 0 });
+
+  useEffect(() => {
+    fetchSourceWalletMetrics().then(setMetrics);
+  }, []);
 
   return (
     <div className="space-y-4">
-      <BalanceCard balance={14250} onTopUp={openWalletAllocation} />
+      <BalanceCard balance={metrics.balance} onTopUp={openWalletAllocation} />
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-slate-900">Allocation</h2>
         <button
@@ -26,12 +34,11 @@ export default function WalletPage() {
         ))}
       </div>
       <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-        <p className="font-semibold text-slate-900">TON Connect</p>
-        <p className="mt-1">Prepare wallet connection to approve top-ups and future payouts.</p>
-        <button className="mt-3 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
-          <span className="material-symbols-rounded text-base">account_balance_wallet</span>
-          Connect TON Wallet
-        </button>
+        <p className="font-semibold text-slate-900">Wallet status</p>
+        <p className="mt-1">Connect TON wallet to approve top-ups and future payouts.</p>
+        <div className="mt-3 inline-flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2">
+          <TonConnectButton />
+        </div>
       </div>
     </div>
   );

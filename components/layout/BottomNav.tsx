@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const navItems = [
-  { href: '/', label: 'Home', icon: 'home' },
-  { href: '/wallet', label: 'Wallet', icon: 'account_balance_wallet' },
+  { href: '/', label: 'Dashboard', icon: 'dashboard' },
+  { href: '/wallet', label: 'Source Wallet', icon: 'account_balance_wallet' },
   { href: '/orders', label: 'Orders', icon: 'list_alt' },
   { href: '/history', label: 'History', icon: 'history' },
   { href: '/finance', label: 'Finance', icon: 'receipt_long' },
@@ -16,7 +16,7 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-slate-200 bg-white shadow-[0_-8px_30px_rgba(15,23,42,0.1)] md:hidden pb-safe">
-      <div className="mx-auto flex max-w-3xl items-center justify-between px-2 py-2 text-xs font-medium text-slate-500">
+      <div className="mx-auto flex max-w-xl items-center justify-between px-2 py-2 text-xs font-medium text-slate-500">
         {navItems.map((item) => {
           const active = pathname === item.href;
           return (

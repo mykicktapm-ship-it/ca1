@@ -2,6 +2,7 @@
 
 import InvoiceRow from '@/components/finance/InvoiceRow';
 import { invoices } from '@/lib/mockData';
+import TonConnectButton from '@/components/ton/TonConnectButton';
 
 export default function FinancePage() {
   return (
@@ -21,10 +22,9 @@ export default function FinancePage() {
       <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
         <p className="font-semibold text-slate-900">Pay via TON Connect</p>
         <p className="mt-1">Use your TON wallet to settle invoices directly inside the mini app.</p>
-        <button className="mt-3 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
-          <span className="material-symbols-rounded text-base">bolt</span>
-          Pay with TON
-        </button>
+        <div className="mt-3 inline-flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2">
+          <TonConnectButton />
+        </div>
       </div>
     </div>
   );
