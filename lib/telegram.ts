@@ -16,9 +16,10 @@ export const initializeTelegramWebApp = async (): Promise<TelegramWebApp | null>
 
   webAppPromise = import('@twa-dev/sdk')
     .then(({ default: WebApp }) => {
-      WebApp.ready();
-      WebApp.expand();
-      return WebApp;
+      const instance = typeof window !== 'undefined' && (window as any).Telegram?.WebApp ? (window as any).Telegram.WebApp : WebApp;
+      instance.ready();
+      instance.expand();
+      return instance as TelegramWebApp;
     })
     .catch((err) => {
       console.error('Telegram WebApp init failed', err);

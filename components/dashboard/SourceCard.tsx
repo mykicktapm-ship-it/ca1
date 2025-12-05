@@ -7,7 +7,7 @@ interface SourceCardProps {
 export default function SourceCard({ source }: SourceCardProps) {
   const pct = Math.min(100, Math.round((source.spent / source.allocated) * 100));
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold text-white ${source.color}`}>

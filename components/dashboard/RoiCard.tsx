@@ -4,7 +4,7 @@ interface RoiCardProps {
 
 export default function RoiCard({ roi }: RoiCardProps) {
   return (
-    <div className="hidden rounded-3xl bg-white p-4 shadow-sm md:block">
+    <div className="hidden rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:block">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-slate-500">Avg. ROI (Week)</p>

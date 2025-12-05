@@ -20,10 +20,12 @@ export default function TopBar() {
   const title = useMemo(() => titles[pathname] || 'SOURCEFLOW', [pathname]);
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
+    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 pb-1 pt-safe backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-3 sm:px-6">
         <div className="flex flex-1 items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-sm font-semibold text-white">S</div>
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-600 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30">
+            S
+          </div>
           <div className="leading-tight">
             <p className="text-lg font-semibold text-slate-900">{title}</p>
             <p className="hidden text-xs text-slate-500 sm:block">SOURCEFLOW control center</p>
@@ -44,7 +46,7 @@ export default function TopBar() {
           </button>
           <button
             onClick={openNewOrder}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 md:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 md:hidden"
             aria-label="Create new order"
           >
             <span className="material-symbols-rounded">add</span>
