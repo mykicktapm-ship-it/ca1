@@ -60,9 +60,6 @@ export function RequestForm() {
 
   const watchedGeo = watch('geo');
   const watchedBudget = watch('budget');
-  const watchedPlatform = watch('platform');
-  const watchedNiche = watch('niche');
-  const watchedAudience = watch('audience');
 
   const toggleGeo = (country: string) => {
     const current = getValues('geo');
