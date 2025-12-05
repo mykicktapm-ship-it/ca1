@@ -16,7 +16,7 @@ export default function WalletAllocationModal({ sources, onClose }: WalletAlloca
   const unallocated = Math.max(0, 20000 - Object.values(allocations).reduce((sum, val) => sum + val, 0));
 
   return (
-    <div className="w-full max-w-xl rounded-3xl bg-white p-4 shadow-2xl md:p-6">
+    <div className="w-full max-w-xl rounded-t-3xl bg-white p-4 shadow-2xl ring-1 ring-slate-200/60 md:max-h-[80vh] md:overflow-y-auto md:rounded-3xl md:p-6">
       <div className="mb-4 flex items-start justify-between">
         <div>
           <p className="text-lg font-semibold text-slate-900">Wallet Allocation</p>

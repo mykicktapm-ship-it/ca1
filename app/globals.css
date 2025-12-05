@@ -17,11 +17,16 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  min-width: 320px;
+}
+
 body {
   background: var(--bg);
   color: #0f172a;
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   min-height: 100vh;
+  padding-top: env(safe-area-inset-top);
 }
 
 a {
@@ -52,4 +57,23 @@ button {
 
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+@keyframes toast-in {
+  from {
+    transform: translateY(-6px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-toast-in {
+  animation: toast-in 0.25s ease-out;
 }

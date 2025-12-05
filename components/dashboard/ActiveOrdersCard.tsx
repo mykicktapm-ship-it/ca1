@@ -5,7 +5,7 @@ interface ActiveOrdersCardProps {
 
 export default function ActiveOrdersCard({ count, delta }: ActiveOrdersCardProps) {
   return (
-    <div className="rounded-3xl bg-white p-4 shadow-sm">
+    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-slate-500">Active Orders</p>
