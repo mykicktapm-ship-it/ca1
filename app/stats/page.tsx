@@ -1,19 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  Chart as ChartJS,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  Tooltip,
-  Legend
-} from 'chart.js';
-import { Bar } from 'react-chartjs-2';
-import WebApp from '@twa-dev/sdk';
+import dynamic from 'next/dynamic';
+import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 import type { Application, Metric } from '@/lib/types';
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+const Bar = dynamic(
+  () => import('react-chartjs-2').then((mod) => mod.Bar),
+  { ssr: false }
+);
 
 interface StatsResponse {
   applications: Application[];
@@ -21,15 +16,25 @@ interface StatsResponse {
 }
 
 export default function StatsPage() {
+  const tg = useTelegramWebApp();
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const registerCharts = async () => {
+      const { Chart, BarElement, CategoryScale, LinearScale, Tooltip, Legend } = await import('chart.js');
+      Chart.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+    };
+
+    registerCharts();
+  }, []);
 
   useEffect(() => {
     const load = async () => {
       try {
         const res = await fetch('/api/stats', {
           headers: {
-            'x-telegram-init': WebApp.initData || ''
+            'x-telegram-init': tg?.initData || ''
           }
         });
         if (!res.ok) {
@@ -42,8 +47,10 @@ export default function StatsPage() {
       }
     };
 
-    load();
-  }, []);
+    if (!stats) {
+      load();
+    }
+  }, [stats, tg]);
 
   const labels = stats?.metrics.map((m) => new Date(m.timestamp).toLocaleDateString()) || [];
   const chartData = {

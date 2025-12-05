@@ -2,8 +2,8 @@
 
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import WebApp from '@twa-dev/sdk';
 import { useState } from 'react';
+import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 
 interface FormValues {
   geo: string;
@@ -14,6 +14,7 @@ interface FormValues {
 }
 
 export default function HomePage() {
+  const tg = useTelegramWebApp();
   const router = useRouter();
   const {
     register,
@@ -37,7 +38,7 @@ export default function HomePage() {
       ...data,
       geo: data.geo.split(',').map((item) => item.trim()).filter(Boolean),
       budget: Number(data.budget),
-      initData: WebApp.initData || ''
+      initData: tg?.initData || ''
     };
 
     const response = await fetch('/api/applications', {

@@ -1,21 +1,18 @@
 'use client';
 
-import { useEffect, useMemo, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import './globals.css';
-import WebApp from '@twa-dev/sdk';
 import Link from 'next/link';
+import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 
 export default function RootLayout({
   children
 }: {
   children: ReactNode;
 }) {
-  useEffect(() => {
-    WebApp.ready();
-    WebApp.expand();
-  }, []);
+  const tg = useTelegramWebApp();
 
-  const initData = useMemo(() => WebApp.initData || '', []);
+  const initData = useMemo(() => tg?.initData || '', [tg]);
 
   return (
     <html lang="en">
