@@ -1,3 +1,5 @@
+'use client';
+
 interface BalanceCardProps {
   balance: number;
   onTopUp?: () => void;
