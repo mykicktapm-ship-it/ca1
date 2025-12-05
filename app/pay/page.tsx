@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import WebApp from '@twa-dev/sdk';
+import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 
-export default function PayPage() {
+function PayContent() {
+  const tg = useTelegramWebApp();
   const params = useSearchParams();
   const initialId = params.get('application_id') || '';
   const [applicationId, setApplicationId] = useState(initialId);
@@ -15,7 +16,7 @@ export default function PayPage() {
     const res = await fetch('/api/payments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ application_id: applicationId, initData: WebApp.initData || '' })
+      body: JSON.stringify({ application_id: applicationId, initData: tg?.initData || '' })
     });
 
     if (!res.ok) {
@@ -57,5 +58,13 @@ export default function PayPage() {
         {status === 'error' && <p className="text-sm text-red-300">Failed to update status.</p>}
       </div>
     </section>
+  );
+}
+
+export default function PayPage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-gray-400">Loading payment form...</p>}>
+      <PayContent />
+    </Suspense>
   );
 }
