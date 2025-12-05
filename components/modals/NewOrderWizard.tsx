@@ -1,7 +1,10 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { sources } from '@/lib/mockData';
+import { useRouter } from 'next/navigation';
+import { sources, type Order } from '@/lib/mockData';
+import { useOrders } from '@/components/layout/OrdersContext';
+import { useNotifications } from '@/components/layout/NotificationContext';
 
 const niches = ['Fintech', 'E-commerce', 'Gaming', 'Education'];
 
@@ -22,8 +25,30 @@ export default function NewOrderWizard({ onClose }: NewOrderWizardProps) {
     maxAge: 50,
     devices: { mobile: true, desktop: false },
   });
+  const router = useRouter();
+  const { addOrder } = useOrders();
+  const { addNotification } = useNotifications();
 
   const selectedSource = useMemo(() => sources.find((s) => s.id === form.source)!, [form.source]);
+
+  const finishWizard = () => {
+    const newOrder: Order = {
+      id: `ORD-${Date.now().toString().slice(-5)}`,
+      name: form.product,
+      geo: 'MULTI',
+      source: selectedSource.name,
+      metrics: { budget: form.budget, spend: 0, leads: 0, cpa: 0 },
+      status: 'active',
+    };
+    addOrder(newOrder);
+    addNotification({
+      type: 'order_created',
+      title: 'New order created',
+      message: `${newOrder.name} launched with ${selectedSource.name}`,
+    });
+    onClose();
+    router.push('/orders');
+  };
 
   return (
     <div className="w-full max-w-2xl rounded-3xl bg-white p-4 shadow-2xl md:p-6">
@@ -222,7 +247,7 @@ export default function NewOrderWizard({ onClose }: NewOrderWizardProps) {
           </button>
         ) : (
           <button
-            onClick={onClose}
+            onClick={finishWizard}
             className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20"
           >
             Launch

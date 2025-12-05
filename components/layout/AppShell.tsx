@@ -9,11 +9,15 @@ import { UIProvider, useUI } from './UIContext';
 import WalletAllocationModal from '@/components/modals/WalletAllocationModal';
 import NewOrderWizard from '@/components/modals/NewOrderWizard';
 import { sources } from '@/lib/mockData';
-import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
+import { useTelegramContext } from '../telegram/TelegramProvider';
+import { NotificationProvider } from './NotificationContext';
+import { OrdersProvider } from './OrdersContext';
+import { TelegramProvider } from '../telegram/TelegramProvider';
+import { TonConnectProvider } from '../ton/TonConnectProvider';
 
 function ShellContent({ children }: { children: React.ReactNode }) {
   const { activeModal, closeModal } = useUI();
-  const webApp = useTelegramWebApp();
+  const { webApp } = useTelegramContext();
 
   useEffect(() => {
     webApp?.expand();
@@ -25,7 +29,7 @@ function ShellContent({ children }: { children: React.ReactNode }) {
         <Sidebar />
         <div className="flex min-h-screen flex-1 flex-col md:bg-slate-50/80">
           <TopBar />
-          <main className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pb-24 pt-4 sm:px-6 md:pb-6">
+          <main className="relative mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5 px-4 pb-28 pt-4 sm:px-5 md:max-w-5xl md:gap-6 md:pb-6">
             {children}
           </main>
         </div>
@@ -50,8 +54,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <UIProvider>
-      <ShellContent>{children}</ShellContent>
-    </UIProvider>
+    <TelegramProvider>
+      <TonConnectProvider>
+        <NotificationProvider>
+          <OrdersProvider>
+            <UIProvider>
+              <ShellContent>{children}</ShellContent>
+            </UIProvider>
+          </OrdersProvider>
+        </NotificationProvider>
+      </TonConnectProvider>
+    </TelegramProvider>
   );
 }

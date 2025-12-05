@@ -5,21 +5,30 @@ import AllocationCard from '@/components/dashboard/AllocationCard';
 import ActiveOrdersCard from '@/components/dashboard/ActiveOrdersCard';
 import RoiCard from '@/components/dashboard/RoiCard';
 import SourceCard from '@/components/dashboard/SourceCard';
+import { useEffect, useState } from 'react';
 import { sources } from '@/lib/mockData';
 import { useUI } from '@/components/layout/UIContext';
+import { fetchDashboardMetrics } from '@/lib/metricsClient';
 
 export default function DashboardPage() {
   const { openWalletAllocation } = useUI();
+  const [stats, setStats] = useState({ balance: 0, allocated: 0, spent: 0, activeOrders: 0, roi: 0 });
+
+  useEffect(() => {
+    fetchDashboardMetrics().then(setStats);
+    const interval = setInterval(() => fetchDashboardMetrics().then(setStats), 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="space-y-6 pb-4">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
         <div className="md:col-span-2">
-          <BalanceCard balance={14250} onTopUp={openWalletAllocation} />
+          <BalanceCard balance={stats.balance} onTopUp={openWalletAllocation} />
         </div>
-        <AllocationCard allocated={12400} spent={6800} />
-        <ActiveOrdersCard count={12} delta="+2 today" />
-        <RoiCard roi={142} />
+        <AllocationCard allocated={stats.allocated} spent={stats.spent} />
+        <ActiveOrdersCard count={stats.activeOrders} delta="+2 today" />
+        <RoiCard roi={stats.roi} />
       </div>
 
       <section className="space-y-3">
