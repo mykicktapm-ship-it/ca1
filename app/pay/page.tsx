@@ -2,6 +2,8 @@
 
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { FormCard } from '@/components/ui/FormCard';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useTelegramInitData } from '@/hooks/useTelegramInitData';
 import { apiGet, apiPost } from '@/lib/api';
 import type { Application } from '@/lib/types';
@@ -73,81 +75,88 @@ function PayContent() {
   };
 
   return (
-    <section className="space-y-6 rounded-2xl bg-white/5 p-6 shadow-lg shadow-black/30">
-      <div className="space-y-2">
-        <p className="text-sm uppercase tracking-wide text-primary">Payment</p>
-        <h1 className="text-2xl font-semibold">Complete your request</h1>
-        <p className="text-sm text-gray-400">
-          Review your application details and finish payment inside Telegram.
-        </p>
+    <div className="space-y-4">
+      <div className="space-y-2 text-center">
+        <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">SOURCEFLOW / Оплата</p>
+        <h1 className="text-2xl font-semibold">Завершите заказ</h1>
+        <p className="text-sm text-[var(--text-muted)]">Проверьте детали заявки и оплатите прямо внутри Telegram.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-3 rounded-xl border border-white/10 bg-black/30 p-4">
-          <div className="flex items-center justify-between text-sm text-gray-300">
-            <span>Application ID</span>
-            <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold text-primary">
-              {applicationId || 'Not provided'}
-            </span>
+      <FormCard
+        title="Заявка"
+        description="Все параметры, которые мы зафиксировали."
+        action={<StatusBadge status={application?.status || 'new'} />}
+      >
+        <div className="space-y-3 text-sm">
+          <div className="flex items-center justify-between rounded-xl bg-[#0f1118] px-3 py-2">
+            <span className="text-[var(--text-muted)]">ID</span>
+            <span className="font-semibold text-white">{applicationId || '—'}</span>
           </div>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2">
-              <span className="text-gray-400">Service</span>
-              <span className="font-semibold capitalize">{application?.service?.replace('_', ' ') || '—'}</span>
-            </div>
-            <div className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2">
-              <span className="text-gray-400">GEO</span>
-              <span className="font-semibold">{application?.geo.join(', ') || '—'}</span>
-            </div>
-            <div className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2">
-              <span className="text-gray-400">Audience</span>
-              <span className="text-right font-semibold text-sm text-gray-100">
-                {application?.audience || '—'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2">
-              <span className="text-gray-400">Niche</span>
-              <span className="font-semibold">{application?.niche || '—'}</span>
-            </div>
+          <div className="flex items-center justify-between rounded-xl bg-[#0f1118] px-3 py-2">
+            <span className="text-[var(--text-muted)]">GEO</span>
+            <span className="font-semibold text-white">{application?.geo.join(', ') || '—'}</span>
+          </div>
+          <div className="flex items-center justify-between rounded-xl bg-[#0f1118] px-3 py-2">
+            <span className="text-[var(--text-muted)]">Платформа</span>
+            <span className="font-semibold text-white capitalize">{application?.service?.replace('_', ' ') || '—'}</span>
+          </div>
+          <div className="flex items-center justify-between rounded-xl bg-[#0f1118] px-3 py-2">
+            <span className="text-[var(--text-muted)]">Ниша</span>
+            <span className="font-semibold text-white">{application?.niche || '—'}</span>
+          </div>
+          <div className="flex items-center justify-between rounded-xl bg-[#0f1118] px-3 py-2">
+            <span className="text-[var(--text-muted)]">ЦА</span>
+            <span className="text-right text-sm font-semibold text-white">{application?.audience || '—'}</span>
           </div>
         </div>
+      </FormCard>
 
-        <div className="flex flex-col justify-between space-y-4 rounded-xl border border-white/10 bg-primary/5 p-4 shadow-lg shadow-primary/20">
-          <div className="space-y-2">
-            <p className="text-sm uppercase tracking-wide text-primary">Amount due</p>
-            <p className="text-3xl font-semibold text-white">{amountDue || '—'}</p>
-            <p className="text-sm text-gray-300">This payment is processed in Telegram via our mock flow.</p>
+      <FormCard title="Оплата" description="Мы используем встроенный платежный поток Telegram.">
+        <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-[#0f1118] p-4">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-[var(--text-muted)]">К оплате</span>
+            <span className="text-2xl font-semibold text-white">{amountDue || '—'}</span>
           </div>
-
+          <p className="text-sm text-[var(--text-muted)]">
+            Статус: <span className="text-white">ожидает оплаты</span>. После оплаты статус поменяется на paid, а мы запустим трафик.
+          </p>
           <div className="space-y-2">
             <button
               onClick={onPay}
               disabled={!applicationId || ctaState === 'processing' || loading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-primary/30 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(90,99,255,0.35)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {ctaState === 'processing' ? 'Opening Telegram...' : 'Pay in Telegram'}
+              {ctaState === 'processing' ? 'Открываем оплату...' : 'Оплатить'}
             </button>
             <button
               disabled
-              className="w-full rounded-lg border border-white/10 bg-black/40 px-4 py-3 text-sm font-semibold text-gray-300"
+              className="w-full rounded-xl border border-[var(--border)] bg-[#0f1118] px-4 py-3 text-sm font-semibold text-[var(--text-muted)]"
             >
-              Alternate method (soon)
+              Альтернативные методы (скоро)
             </button>
-            {error && <p className="text-sm text-red-300">{error}</p>}
-            {ctaState === 'done' && <p className="text-sm text-success">Payment completed. Redirecting...</p>}
-            {!initData && <p className="text-xs text-amber-200">Waiting for Telegram session...</p>}
           </div>
+          {error && <p className="text-sm text-[#ff7a98]">{error}</p>}
+          {ctaState === 'done' && <p className="text-sm text-emerald-200">Оплата подтверждена. Перенаправляем...</p>}
+          {!initData && <p className="text-xs text-amber-200">Ожидаем сессию Telegram...</p>}
         </div>
-      </div>
+        <p className="text-xs text-[var(--text-muted)]">Выполнение и обновление статистики каждые 6 часов.</p>
+        <button
+          type="button"
+          onClick={() => router.push(`/stats?applicationId=${applicationId}`)}
+          className="w-full rounded-xl border border-[var(--border)] bg-[#0f1118] px-4 py-3 text-sm font-semibold text-white transition hover:border-[var(--primary)]/60"
+        >
+          Перейти к статусу
+        </button>
+      </FormCard>
 
-      {loading && <p className="text-sm text-gray-400">Loading your application...</p>}
-    </section>
+      {loading && <p className="text-sm text-[var(--text-muted)]">Загружаем вашу заявку...</p>}
+    </div>
   );
 }
 
 export default function PayPage() {
   return (
-    <Suspense fallback={<p className="text-sm text-gray-400">Loading payment form...</p>}>
+    <Suspense fallback={<p className="text-sm text-[var(--text-muted)]">Готовим оплату...</p>}>
       <PayContent />
     </Suspense>
   );

@@ -1,47 +1,33 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import dynamic from 'next/dynamic';
-import { ActiveCampaignsPanel } from '@/components/dashboard/ActiveCampaignsPanel';
-import { ApplicationStatusCard } from '@/components/dashboard/ApplicationStatusCard';
-import { MySourcesGrid, type SourceOverview } from '@/components/dashboard/MySourcesGrid';
-import { PortfolioDonut } from '@/components/dashboard/PortfolioDonut';
+import { MetricCard } from '@/components/ui/MetricCard';
+import { FormCard } from '@/components/ui/FormCard';
+import { StatsChart } from '@/components/ui/StatsChart';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useTelegramInitData } from '@/hooks/useTelegramInitData';
 import { apiGet } from '@/lib/api';
 import type { Application, Metric } from '@/lib/types';
-
-const Bar = dynamic(() => import('react-chartjs-2').then((mod) => mod.Bar), { ssr: false });
 
 interface StatsResponse {
   applications: Application[];
   metrics: Metric[];
 }
 
-type Timeframe = '7d' | '30d' | 'all';
-
-type StatusBreakdown = Record<Application['status'], number>;
-
 export default function StatsPage() {
   const { initData } = useTelegramInitData();
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [timeframe, setTimeframe] = useState<Timeframe>('7d');
-  const [serviceFilter, setServiceFilter] = useState<string>('all');
-
-  useEffect(() => {
-    const registerCharts = async () => {
-      const { ArcElement, BarElement, CategoryScale, Chart, Legend, LinearScale, Tooltip } = await import('chart.js');
-      Chart.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
-    };
-
-    registerCharts();
-  }, []);
+  const [selectedId, setSelectedId] = useState<string>('');
 
   useEffect(() => {
     const load = async () => {
       try {
         const payload = await apiGet<StatsResponse>('/api/stats', { initData });
         setStats(payload);
+        if (!selectedId && payload.applications.length > 0) {
+          setSelectedId(payload.applications[payload.applications.length - 1]?.id);
+        }
       } catch (err) {
         setError((err as Error).message);
       }
@@ -50,220 +36,115 @@ export default function StatsPage() {
     if (!stats && initData) {
       load();
     }
-  }, [initData, stats]);
+  }, [initData, selectedId, stats]);
 
-  const applicationLookup = useMemo(() => {
-    const map = new Map<string, Application>();
-    stats?.applications.forEach((app) => map.set(app.id, app));
-    return map;
-  }, [stats]);
+  const selectedApplication = useMemo(() => {
+    return stats?.applications.find((app) => app.id === selectedId) || null;
+  }, [selectedId, stats]);
 
-  const filteredApplications = useMemo(() => {
-    if (!stats) return [];
-    return stats.applications.filter((app) => serviceFilter === 'all' || app.service === serviceFilter);
-  }, [serviceFilter, stats]);
+  const selectedMetrics = useMemo(() => {
+    if (!stats || !selectedApplication) return [];
+    return stats.metrics
+      .filter((metric) => metric.application_id === selectedApplication.id)
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  }, [selectedApplication, stats]);
 
-  const serviceOptions = useMemo(
-    () => Array.from(new Set(stats?.applications.map((app) => app.service))).sort(),
-    [stats]
-  );
+  const totals = useMemo(() => {
+    const impressions = selectedMetrics.reduce((sum, metric) => sum + metric.impressions, 0);
+    const clicks = selectedMetrics.reduce((sum, metric) => sum + metric.clicks, 0);
+    const cost = selectedMetrics.reduce((sum, metric) => sum + metric.cost, 0);
+    const ctr = impressions ? (clicks / impressions) * 100 : 0;
 
-  const filteredMetrics = useMemo(() => {
-    if (!stats) return [];
-    const now = Date.now();
-    const windowMs = timeframe === '7d' ? 7 * 86_400_000 : timeframe === '30d' ? 30 * 86_400_000 : null;
+    return { impressions, clicks, cost, ctr };
+  }, [selectedMetrics]);
 
-    return stats.metrics.filter((metric) => {
-      const app = applicationLookup.get(metric.application_id);
-      const matchesService = serviceFilter === 'all' || app?.service === serviceFilter;
-      const matchesWindow = windowMs ? now - new Date(metric.timestamp).getTime() <= windowMs : true;
-      return matchesService && matchesWindow;
-    });
-  }, [applicationLookup, serviceFilter, stats, timeframe]);
-
-  const statusBreakdown = useMemo(() => {
-    const counts: StatusBreakdown = { completed: 0, in_progress: 0, new: 0, paid: 0 };
-    filteredApplications.forEach((app) => {
-      counts[app.status] += 1;
-    });
-    return counts;
-  }, [filteredApplications]);
-
-  const serviceAggregates = useMemo(() => {
-    const aggregates = new Map<
-      string,
-      { impressions: number; clicks: number; cost: number; geo: Set<string>; applications: Application[] }
-    >();
-
-    filteredApplications.forEach((app) => {
-      const existing = aggregates.get(app.service) || {
-        impressions: 0,
-        clicks: 0,
-        cost: 0,
-        geo: new Set<string>(),
-        applications: [] as Application[]
-      };
-      existing.applications.push(app);
-      app.geo.forEach((g) => existing.geo.add(g));
-      aggregates.set(app.service, existing);
-    });
-
-    filteredMetrics.forEach((metric) => {
-      const app = applicationLookup.get(metric.application_id);
-      if (!app) return;
-      const entry = aggregates.get(app.service);
-      if (!entry) return;
-      entry.impressions += metric.impressions;
-      entry.clicks += metric.clicks;
-      entry.cost += metric.cost;
-    });
-
-    return aggregates;
-  }, [applicationLookup, filteredApplications, filteredMetrics]);
-
-  const portfolioData = useMemo(() => {
-    const palette = ['#5A63FF', '#4BD8A2', '#F59E0B', '#F87171', '#38BDF8'];
-    const entries = Array.from(serviceAggregates.entries());
-    return entries.map(([service, data], index) => ({
-      label: service.replace('_', ' '),
-      value: data.cost || data.impressions || data.applications.length,
-      color: palette[index % palette.length]
-    }));
-  }, [serviceAggregates]);
-
-  const sources: SourceOverview[] = useMemo(() => {
-    const entries = Array.from(serviceAggregates.entries());
-    return entries.map(([service, data], index) => {
-      const impressions = data.impressions || 1;
-      const ctr = (data.clicks / impressions) * 100;
-      const conversions = Math.max(1, Math.round(data.clicks * 0.3));
-      const regions = Array.from(data.geo).join(', ');
-      const status = data.applications.some((app) => app.status === 'completed') ? 'completed' : 'active';
-
-      return {
-        id: service,
-        name: service.replace('_', ' '),
-        platform: `Source ${index + 1}`,
-        region: regions || 'Global',
-        spend: Math.round(data.cost || data.applications.length * 120),
-        ctr,
-        conversions,
-        status
-      };
-    });
-  }, [serviceAggregates]);
-
-  const activeCampaigns = useMemo(() => {
-    return filteredApplications
-      .filter((app) => app.status === 'in_progress' || app.status === 'paid')
-      .map((app) => {
-        const relatedMetrics = filteredMetrics.filter((metric) => metric.application_id === app.id);
-        return {
-          id: app.id,
-          name: app.service.replace('_', ' '),
-          status: app.status,
-          reach: relatedMetrics.reduce((sum, metric) => sum + metric.impressions, 0),
-          spend: relatedMetrics.reduce((sum, metric) => sum + metric.cost, 0),
-          geo: app.geo.join(', '),
-          applications: 1
-        };
-      });
-  }, [filteredApplications, filteredMetrics]);
-
-  const labels = filteredMetrics.map((m) => new Date(m.timestamp).toLocaleDateString());
-  const chartData = {
-    labels,
-    datasets: [
-      {
-        label: 'Impressions',
-        data: filteredMetrics.map((m) => m.impressions),
-        backgroundColor: '#5A63FF'
-      },
-      {
-        label: 'Clicks',
-        data: filteredMetrics.map((m) => m.clicks),
-        backgroundColor: '#4BD8A2'
-      }
-    ]
-  };
+  const labels = selectedMetrics.map((m) => new Date(m.timestamp).toLocaleDateString());
+  const datasets = [
+    {
+      label: 'Показы',
+      data: selectedMetrics.map((m) => m.impressions),
+      backgroundColor: '#5A63FF'
+    },
+    {
+      label: 'Клики',
+      data: selectedMetrics.map((m) => m.clicks),
+      backgroundColor: '#4BD8A2'
+    }
+  ];
 
   return (
-    <section className="space-y-6">
-      <div className="space-y-2">
-        <p className="text-sm uppercase tracking-wide text-primary">Performance</p>
-        <h1 className="text-2xl font-semibold">Your stats</h1>
-        <p className="text-sm text-gray-400">Insights based on your applications and stubbed metrics.</p>
+    <div className="space-y-4">
+      <div className="space-y-2 text-center">
+        <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">SOURCEFLOW / Статистика</p>
+        <h1 className="text-2xl font-semibold">Статус и метрики</h1>
+        <p className="text-sm text-[var(--text-muted)]">Обновление каждые 6 часов. Всё привязано к вашему Telegram.</p>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-2xl bg-white/5 p-4 shadow-lg shadow-black/30 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3 text-sm text-gray-300">
-          <span className="rounded-full bg-primary/20 px-3 py-1 text-xs font-semibold text-primary">Filters</span>
-          <p className="text-sm text-gray-400">Adjust view by timeframe and source.</p>
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
+      {error && <p className="text-sm text-[#ff7a98]">{error}</p>}
+
+      <FormCard title="Заявки" description="Выберите нужную заявку, чтобы увидеть детали и динамику.">
+        <div className="space-y-3">
           <select
-            className="rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-gray-200"
-            value={serviceFilter}
-            onChange={(e) => setServiceFilter(e.target.value)}
+            value={selectedId}
+            onChange={(e) => setSelectedId(e.target.value)}
+            className="w-full rounded-xl border border-[var(--border)] bg-[#0f1118] px-3 py-2 text-sm text-white focus:border-[var(--primary)] focus:outline-none"
           >
-            <option value="all">All sources</option>
-            {serviceOptions.map((service) => (
-              <option key={service} value={service}>
-                {service.replace('_', ' ')}
+            <option value="" disabled>
+              {stats?.applications.length ? 'Выберите заявку' : 'Заявок пока нет'}
+            </option>
+            {stats?.applications.map((app) => (
+              <option key={app.id} value={app.id} className="bg-[#0f1118] text-white">
+                {app.service.replace('_', ' ')} · {app.geo.join(', ')} · {new Date(app.created_at).toLocaleDateString()}
               </option>
             ))}
           </select>
-          <select
-            className="rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-gray-200"
-            value={timeframe}
-            onChange={(e) => setTimeframe(e.target.value as Timeframe)}
-          >
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-            <option value="all">All time</option>
-          </select>
-        </div>
-      </div>
 
-      {error && <p className="text-red-300">{error}</p>}
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="space-y-6">
-          <PortfolioDonut
-            subtitle="Distribution of spend and reach by source"
-            data={portfolioData}
-          />
-          <div className="space-y-3 rounded-2xl bg-white/5 p-6 shadow-lg shadow-black/30">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm uppercase tracking-wide text-primary">Timeline</p>
-                <h2 className="text-xl font-semibold">Engagement trend</h2>
+          {selectedApplication ? (
+            <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-[#0f1118] p-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1 text-sm text-[var(--text-muted)]">
+                  <p>Заявка {selectedApplication.id}</p>
+                  <p className="text-white text-base font-semibold">{selectedApplication.service.replace('_', ' ')}</p>
+                </div>
+                <StatusBadge status={selectedApplication.status} />
               </div>
-              <span className="text-xs text-gray-400">{labels.length} data points</span>
+              <div className="grid grid-cols-2 gap-3 text-sm text-[var(--text-muted)]">
+                <div className="rounded-xl bg-[#131620] p-3">
+                  <p className="text-[var(--text-muted)]">GEO</p>
+                  <p className="text-white">{selectedApplication.geo.join(', ')}</p>
+                </div>
+                <div className="rounded-xl bg-[#131620] p-3">
+                  <p className="text-[var(--text-muted)]">Бюджет</p>
+                  <p className="text-white">${selectedApplication.budget.toLocaleString()}</p>
+                </div>
+                <div className="rounded-xl bg-[#131620] p-3 col-span-2">
+                  <p className="text-[var(--text-muted)]">Ниша</p>
+                  <p className="text-white">{selectedApplication.niche}</p>
+                </div>
+              </div>
             </div>
-            {!error && filteredMetrics.length > 0 ? (
-              <Bar data={chartData} className="bg-black/20" />
-            ) : (
-              <p className="text-sm text-gray-400">No metrics available yet.</p>
-            )}
+          ) : (
+            <p className="text-sm text-[var(--text-muted)]">Пока нет выбранной заявки.</p>
+          )}
+        </div>
+      </FormCard>
+
+      <FormCard title="Метрики" description="Ключевые показатели за выбранный период.">
+        {selectedMetrics.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <MetricCard label="Показы" value={totals.impressions.toLocaleString()} />
+            <MetricCard label="Клики" value={totals.clicks.toLocaleString()} />
+            <MetricCard label="CTR" value={`${totals.ctr.toFixed(2)}%`} />
+            <MetricCard label="Расход" value={`$${totals.cost.toLocaleString()}`} />
           </div>
-        </div>
+        ) : (
+          <p className="text-sm text-[var(--text-muted)]">Статистика появится после запуска и первых обновлений.</p>
+        )}
+      </FormCard>
 
-        <div className="space-y-6">
-          <ApplicationStatusCard
-            total={filteredApplications.length}
-            items={[
-              { label: 'new', value: statusBreakdown.new, color: '#38BDF8' },
-              { label: 'paid', value: statusBreakdown.paid, color: '#5A63FF' },
-              { label: 'in_progress', value: statusBreakdown.in_progress, color: '#4BD8A2' },
-              { label: 'completed', value: statusBreakdown.completed, color: '#F59E0B' }
-            ]}
-          />
-          <ActiveCampaignsPanel campaigns={activeCampaigns} />
-        </div>
-      </div>
-
-      <MySourcesGrid sources={sources} />
-    </section>
+      <FormCard title="Динамика" description="Показы и клики в разрезе времени.">
+        <StatsChart labels={labels} datasets={datasets} />
+      </FormCard>
+    </div>
   );
 }
