@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTelegramInitData } from '@/hooks/useTelegramInitData';
+import { apiGet, apiPost } from '@/lib/api';
 import type { Application } from '@/lib/types';
 
 const currency = new Intl.NumberFormat('en-US', {
@@ -30,17 +31,7 @@ function PayContent() {
       setError(null);
 
       try {
-        const response = await fetch('/api/applications', {
-          headers: {
-            'x-telegram-init': initData
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Unable to load application');
-        }
-
-        const payload = (await response.json()) as Application[];
+        const payload = await apiGet<Application[]>('/api/applications', { initData });
         const match = payload.find((item) => item.id === applicationId) || null;
 
         if (!match) {
@@ -71,18 +62,7 @@ function PayContent() {
     setError(null);
 
     try {
-      const response = await fetch('/api/payments/mock-complete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ application_id: applicationId, initData })
-      });
-
-      if (!response.ok) {
-        const message = await response.text();
-        throw new Error(message || 'Payment failed');
-      }
+      await apiPost('/api/payments/mock-complete', { application_id: applicationId }, { initData });
 
       setCtaState('done');
       router.push(`/stats?applicationId=${applicationId}`);
