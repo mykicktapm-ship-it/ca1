@@ -1,20 +1,11 @@
 'use client';
 
-import { SourceCard } from './SourceCard';
+import type { Source } from '@/lib/mockData';
 
-export interface SourceOverview {
-  id: string;
-  name: string;
-  platform: string;
-  region: string;
-  spend: number;
-  ctr: number;
-  conversions: number;
-  status: string;
-}
+import SourceCard from './SourceCard';
 
 interface MySourcesGridProps {
-  sources: SourceOverview[];
+  sources: Source[];
 }
 
 export function MySourcesGrid({ sources }: MySourcesGridProps) {
@@ -35,7 +26,7 @@ export function MySourcesGrid({ sources }: MySourcesGridProps) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {sources.map((source) => (
-            <SourceCard key={source.id} {...source} />
+            <SourceCard key={source.id} source={source} />
           ))}
         </div>
       )}
