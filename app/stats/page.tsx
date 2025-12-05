@@ -8,13 +8,14 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useTelegramInitData } from '@/hooks/useTelegramInitData';
 import { apiGet } from '@/lib/api';
 import type { Application, Metric } from '@/lib/types';
+import AppShell from '@/components/layout/AppShell';
 
 interface StatsResponse {
   applications: Application[];
   metrics: Metric[];
 }
 
-export default function StatsPage() {
+function StatsContent() {
   const { initData } = useTelegramInitData();
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -146,5 +147,13 @@ export default function StatsPage() {
         <StatsChart labels={labels} datasets={datasets} />
       </FormCard>
     </div>
+  );
+}
+
+export default function StatsPage() {
+  return (
+    <AppShell>
+      <StatsContent />
+    </AppShell>
   );
 }

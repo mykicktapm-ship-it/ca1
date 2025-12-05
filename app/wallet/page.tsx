@@ -7,8 +7,9 @@ import { sources } from '@/lib/mockData';
 import { useUI } from '@/components/layout/UIContext';
 import TonConnectButton from '@/components/ton/TonConnectButton';
 import { fetchSourceWalletMetrics } from '@/lib/metricsClient';
+import AppShell from '@/components/layout/AppShell';
 
-export default function WalletPage() {
+function WalletContent() {
   const { openWalletAllocation } = useUI();
   const [metrics, setMetrics] = useState({ balance: 0, allocated: 0, spent: 0 });
 
@@ -41,5 +42,13 @@ export default function WalletPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function WalletPage() {
+  return (
+    <AppShell>
+      <WalletContent />
+    </AppShell>
   );
 }

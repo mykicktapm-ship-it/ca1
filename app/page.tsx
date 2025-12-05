@@ -9,8 +9,9 @@ import { useEffect, useState } from 'react';
 import { sources } from '@/lib/mockData';
 import { useUI } from '@/components/layout/UIContext';
 import { fetchDashboardMetrics } from '@/lib/metricsClient';
+import AppShell from '@/components/layout/AppShell';
 
-export default function DashboardPage() {
+function DashboardContent() {
   const { openWalletAllocation } = useUI();
   const [stats, setStats] = useState({ balance: 0, allocated: 0, spent: 0, activeOrders: 0, roi: 0 });
 
@@ -48,5 +49,13 @@ export default function DashboardPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <AppShell>
+      <DashboardContent />
+    </AppShell>
   );
 }

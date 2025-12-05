@@ -4,8 +4,9 @@ import { useEffect, useRef } from 'react';
 import OrderCard from '@/components/orders/OrderCard';
 import { useOrders } from '@/components/layout/OrdersContext';
 import { useNotifications } from '@/components/layout/NotificationContext';
+import AppShell from '@/components/layout/AppShell';
 
-export default function OrdersPage() {
+function OrdersContent() {
   const { orders, lastUpdated } = useOrders();
   const { addNotification } = useNotifications();
   const seeded = useRef(false);
@@ -34,5 +35,13 @@ export default function OrdersPage() {
         ))}
       </div>
     </div>
+  );
+}
+
+export default function OrdersPage() {
+  return (
+    <AppShell>
+      <OrdersContent />
+    </AppShell>
   );
 }

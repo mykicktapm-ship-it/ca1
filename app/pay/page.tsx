@@ -7,6 +7,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useTelegramInitData } from '@/hooks/useTelegramInitData';
 import { apiGet, apiPost } from '@/lib/api';
 import type { Application } from '@/lib/types';
+import AppShell from '@/components/layout/AppShell';
 
 const currency = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -156,8 +157,10 @@ function PayContent() {
 
 export default function PayPage() {
   return (
-    <Suspense fallback={<p className="text-sm text-[var(--text-muted)]">Готовим оплату...</p>}>
-      <PayContent />
-    </Suspense>
+    <AppShell>
+      <Suspense fallback={<p className="text-sm text-[var(--text-muted)]">Готовим оплату...</p>}>
+        <PayContent />
+      </Suspense>
+    </AppShell>
   );
 }
