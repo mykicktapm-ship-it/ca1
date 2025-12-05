@@ -2,5 +2,13 @@
   "extends": ["next", "next/core-web-vitals", "eslint:recommended"],
   "rules": {
     "no-console": ["warn", { "allow": ["warn", "error"] }]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.ts", "**/*.tsx"],
+      "rules": {
+        "no-undef": "off"
+      }
+    }
+  ]
 }
