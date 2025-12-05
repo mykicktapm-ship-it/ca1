@@ -1,3 +1,5 @@
+import type { HeadersInit } from 'next/dist/server/web/spec-compliant/fetch';
+
 interface ApiRequestOptions {
   initData?: string;
   headers?: HeadersInit;
