@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
+import { useTelegramInitData } from '@/hooks/useTelegramInitData';
 import type { Application, Metric } from '@/lib/types';
 
 const Bar = dynamic(
@@ -16,7 +16,7 @@ interface StatsResponse {
 }
 
 export default function StatsPage() {
-  const tg = useTelegramWebApp();
+  const { initData } = useTelegramInitData();
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +34,7 @@ export default function StatsPage() {
       try {
         const res = await fetch('/api/stats', {
           headers: {
-            'x-telegram-init': tg?.initData || ''
+            'x-telegram-init': initData
           }
         });
         if (!res.ok) {
@@ -50,7 +50,7 @@ export default function StatsPage() {
     if (!stats) {
       load();
     }
-  }, [stats, tg]);
+  }, [initData, stats]);
 
   const labels = stats?.metrics.map((m) => new Date(m.timestamp).toLocaleDateString()) || [];
   const chartData = {

@@ -2,10 +2,10 @@
 
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
+import { useTelegramInitData } from '@/hooks/useTelegramInitData';
 
 function PayContent() {
-  const tg = useTelegramWebApp();
+  const { initData } = useTelegramInitData();
   const params = useSearchParams();
   const initialId = params.get('application_id') || '';
   const [applicationId, setApplicationId] = useState(initialId);
@@ -16,7 +16,7 @@ function PayContent() {
     const res = await fetch('/api/payments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ application_id: applicationId, initData: tg?.initData || '' })
+      body: JSON.stringify({ application_id: applicationId, initData })
     });
 
     if (!res.ok) {
