@@ -4,7 +4,7 @@ interface SourceCardProps {
   source: Source;
 }
 
-export default function SourceCard({ source }: SourceCardProps) {
+export function SourceCard({ source }: SourceCardProps) {
   const pct = Math.min(100, Math.round((source.spent / source.allocated) * 100));
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -30,3 +30,5 @@ export default function SourceCard({ source }: SourceCardProps) {
     </div>
   );
 }
+
+export default SourceCard;
