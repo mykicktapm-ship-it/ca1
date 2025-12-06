@@ -3,8 +3,9 @@
 import InvoiceRow from '@/components/finance/InvoiceRow';
 import { invoices } from '@/lib/mockData';
 import TonConnectButton from '@/components/ton/TonConnectButton';
+import AppShell from '@/components/layout/AppShell';
 
-export default function FinancePage() {
+function FinanceContent() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -27,5 +28,13 @@ export default function FinancePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function FinancePage() {
+  return (
+    <AppShell>
+      <FinanceContent />
+    </AppShell>
   );
 }

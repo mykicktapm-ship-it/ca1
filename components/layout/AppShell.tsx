@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
@@ -19,15 +19,23 @@ import NotificationsRoot from './NotificationsRoot';
 function ShellContent({ children }: { children: React.ReactNode }) {
   const { activeModal, closeModal } = useUI();
   const { webApp } = useTelegramContext();
+  const themeApplied = useRef(false);
 
   useEffect(() => {
     if (!webApp) return;
-    webApp.expand();
     const theme = webApp.themeParams;
     if (theme) {
       document.documentElement.style.setProperty('--bg', theme.bg_color ?? '#f5f7fb');
       document.documentElement.style.setProperty('--surface', theme.secondary_bg_color ?? '#ffffff');
       document.documentElement.style.setProperty('--slate', theme.text_color ?? '#0f172a');
+
+      if (!themeApplied.current) {
+        const bgColor = theme.bg_color ?? '#f5f7fb';
+        const headerColor = theme.header_bg_color ?? bgColor;
+        webApp.setHeaderColor?.(headerColor);
+        webApp.setBackgroundColor?.(bgColor);
+        themeApplied.current = true;
+      }
     }
   }, [webApp]);
 
