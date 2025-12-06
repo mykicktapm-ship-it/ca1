@@ -71,7 +71,7 @@ export default function StatsPage() {
   }, [serviceFilter, stats]);
 
   const serviceOptions = useMemo(
-    () => Array.from(new Set(stats?.applications.map((app) => app.service))).sort(),
+    () => Array.from(new Set((stats?.applications ?? []).map((app) => app.service))).sort(),
     [stats]
   );
 
