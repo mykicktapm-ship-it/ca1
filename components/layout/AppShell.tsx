@@ -31,7 +31,7 @@ function ShellContent({ children }: { children: React.ReactNode }) {
 
       if (!themeApplied.current) {
         const bgColor = theme.bg_color ?? '#f5f7fb';
-        const headerColor = theme.header_color ?? bgColor;
+        const headerColor = theme.header_bg_color ?? bgColor;
         webApp.setHeaderColor?.(headerColor);
         webApp.setBackgroundColor?.(bgColor);
         themeApplied.current = true;

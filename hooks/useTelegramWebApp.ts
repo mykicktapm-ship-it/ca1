@@ -18,7 +18,7 @@ export function useTelegramWebApp() {
       const bgColor = theme?.bg_color ?? '#f5f7fb';
 
       if (webApp.setHeaderColor) {
-        webApp.setHeaderColor(theme?.header_color ?? bgColor);
+        webApp.setHeaderColor(theme?.header_bg_color ?? bgColor);
       }
       if (webApp.setBackgroundColor) {
         webApp.setBackgroundColor(bgColor);
