@@ -2,7 +2,7 @@
 
 import type { Source } from '@/lib/mockData';
 
-import SourceCard from './SourceCard';
+import { SourceCard } from './SourceCard';
 
 interface MySourcesGridProps {
   sources: Source[];
