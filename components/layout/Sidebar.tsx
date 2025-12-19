@@ -10,6 +10,7 @@ const navItems = [
   { href: '/wallet', label: 'Source Wallet', icon: 'account_balance_wallet' },
   { href: '/orders', label: 'Active Orders', icon: 'list_alt' },
   { href: '/history', label: 'History', icon: 'history' },
+  { href: '/terminal', label: 'Terminal', icon: 'terminal' },
   { href: '/finance', label: 'Finance', icon: 'receipt_long' },
 ];
 
